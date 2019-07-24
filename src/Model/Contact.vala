@@ -27,11 +27,13 @@ using FileHelper;
 namespace Model {
 
     public class Contact {
-        public Gdk.Pixbuf? icon;
 
         // Default properties
         public string name;
         public Date? birthday;
+        public Date? anniversary;
+
+        public Gdk.Pixbuf? icon;
 
         public List<DataWithType<string>>? phones;
         public List<DataWithType<string>>? emails;
@@ -59,7 +61,7 @@ namespace Model {
             file_name = name;
         }
 
-        public void save () {
+        public void save () throws IOError, Error {
             var builder = new Json.Builder ();
             builder.begin_object ();
 
@@ -68,14 +70,21 @@ namespace Model {
 
             builder.set_member_name ("icon");
             if (icon != null) {
-                uint8[] buffer;
-                icon.save_to_buffer (out buffer, "jpeg");
-                builder.add_string_value (Base64.encode (buffer));
+                try {
+                    uint8[] buffer;
+                    icon.save_to_buffer (out buffer, "jpeg");
+                    builder.add_string_value (Base64.encode (buffer));
+                } catch (Error e) {
+                    error (e.message);
+                }
             } else
                 builder.add_string_value ("");
 
             builder.set_member_name ("birthday");
             builder.add_value (get_date (birthday));
+
+            builder.set_member_name ("anniversary");
+            builder.add_value (get_date (anniversary));
 
             builder.set_member_name ("phones");
             builder.add_value (get_string_list_with_type (phones));

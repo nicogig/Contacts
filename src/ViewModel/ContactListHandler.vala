@@ -37,7 +37,7 @@ namespace ViewModel {
             }
         }
 
-        public void initialize () {
+        public void initialize () throws Error {
             var paths = FileHelper.get_contact_files ();
             if (paths.length () == 0) return;
 
@@ -48,6 +48,17 @@ namespace ViewModel {
             }
 
             changed ();
+        }
+
+        public void import_from_folks () throws Error {
+            async_folks_initialize.begin ();
+        }
+
+        private async void async_folks_initialize () throws Error {
+            yield FolksHelper.load ((contact) => {
+                add_contact_from_model (contact);
+            });
+            return;
         }
 
         private GLib.CompareFunc<Model.Contact>? compare_contacts = (c1, c2) => {
@@ -62,6 +73,15 @@ namespace ViewModel {
 
         public void add_contact (string name) {
             var contact = new Contact (name);
+            add_contact_from_model (contact);
+        }
+
+        public void add_contact_by_handler (ContactHandler handler) {
+            var contact = handler.contact;
+            add_contact_from_model (contact);
+        }
+
+        private void add_contact_from_model (Contact contact) {
             contact.remove.connect (() => remove_contact (contact));
 
             contact_list.data.insert_sorted (contact, compare_contacts);
@@ -95,7 +115,7 @@ namespace ViewModel {
             return false;
         }
 
-        public Contact load (string path) {
+        public Contact load (string path) throws Error {
             var contact = JsonHelper.parse (FileHelper.read (path));
             return contact;
         }
@@ -104,7 +124,7 @@ namespace ViewModel {
             return VCardHelper.build_list (contact_list.data);
         }
 
-        public void import (string path) {
+        public void import (string path) throws Error {
             var list = VCardHelper.parse (path);
             foreach (var contact in list) {
                 contact.remove.connect (() => remove_contact (contact));

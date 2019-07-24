@@ -29,7 +29,7 @@ namespace ViewModel {
     public class ContactHandler {
 
         public signal void changed ();
-        private Contact contact;
+        internal Contact contact;
 
         public string name {
             get {
@@ -46,8 +46,17 @@ namespace ViewModel {
                 return contact.birthday;
             }
             set {
-                print ("setting birthday");
                 contact.birthday = value;
+                changed ();
+            }
+        }
+
+        public Date? anniversary {
+            get {
+                return contact.anniversary;
+            }
+            set {
+                contact.anniversary = value;
                 changed ();
             }
         }
@@ -317,7 +326,7 @@ namespace ViewModel {
 
 
 
-        public void save () {
+        public void save () throws Error{
             contact.save ();
         }
 

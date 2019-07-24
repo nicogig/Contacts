@@ -25,7 +25,7 @@ using QuotedPrintableHelper;
 
 namespace VCardHelper {
 
-    public List<Contact> parse (string path) {
+    public List<Contact> parse (string path) throws Error, IOError {
         File file = File.new_for_path (path);
         var dis = new DataInputStream (file.read ());
         var list = new List<Contact> ();
@@ -75,7 +75,6 @@ namespace VCardHelper {
     }
 
     private void set_contact_info(string line, Contact contact) {
-        var home = Environment.get_home_dir();
         if (line.has_prefix ("FN")){
 
             var needle = parse_needle (line);
@@ -184,6 +183,21 @@ namespace VCardHelper {
             bday.set_dmy ((DateDay) day, month, (DateYear) year);
 
             contact.birthday = bday;
+            return;
+        }
+        if (line.has_prefix ("ANNIVERSARY")) {
+
+            var needle = parse_needle (line);
+
+            var year = int.parse (needle.substring (0, 4));
+            var month = int.parse (needle.substring (4, 2));
+            var day = int.parse (needle.substring (6, 2));
+
+            var anniv = Date ();
+            anniv.set_dmy ((DateDay) day, month, (DateYear) year);
+
+            contact.anniversary = anniv;
+
             return;
         }
         if (line.has_prefix ("PHOTO")) {
